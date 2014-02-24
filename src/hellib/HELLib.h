@@ -34,7 +34,9 @@ public:
 #else
   TVectorC(Int_t n = 4) { fData[0]=0.; fData[1]=0.; fData[2]=0.; fData[3]=0.; }
 #endif
-  TVectorC(const TVectorC &src) : fData(src.fData) {}
+  //  TVectorC(const TVectorC &src) : fData(src.fData) {}
+  // fg: the above does not compile, e.g. on clang
+  TVectorC(const TVectorC &src) { fData[0]=src[0]; fData[1]=src[1]; fData[2]=src[2]; fData[3]=src[3]; }
 
   Complex_t  operator[](Int_t i) const { return fData[i]; }
   Complex_t &operator[](Int_t i)       { return fData[i]; }
