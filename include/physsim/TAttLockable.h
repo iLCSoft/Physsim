@@ -22,6 +22,7 @@
 //  Base Class for Lockale Objects
 //  ------------------------------
 //
+namespace lcme{
 class TAttLockable {
 public:
    TAttLockable() : fStatus(kFALSE) {}
@@ -35,5 +36,5 @@ private:
 
    ClassDef(TAttLockable,1)  // Base class for lockable objects
 };
-
+}
 #endif

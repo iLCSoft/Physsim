@@ -40,7 +40,11 @@ namespace lcme{
 		   Double_t massHiggs,
 		   Double_t polE,
 		   Double_t polP)
- :LCMEBase(name,title,polE,polP)
+  :LCMEBase(name,title,polE,polP),
+   fZModePtr  (0),
+   f3Ptr      (0),
+   f4Ptr      (0),
+   fZBosonPtr (0)
   {
     //  Constructor of bases.  Default parameter should be initialized here
     //

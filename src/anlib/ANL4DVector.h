@@ -36,7 +36,7 @@ using namespace std;
 //  Lockable TLorentzVector
 //  -----------------------
 //
-class ANL4DVector : public TLorentzVector, public TAttLockable {
+class ANL4DVector : public TLorentzVector, public lcme::TAttLockable {
 public:
    ANL4DVector(Double_t e=0., Double_t px=0., Double_t py=0., Double_t pz=0.) 
    			       : TLorentzVector(px,py,pz,e) {}
@@ -54,7 +54,7 @@ public:
    //   }
 
    ANL4DVector(const TLorentzVector &q) : TLorentzVector(q) {}
-   ANL4DVector(const ANL4DVector &q) : TLorentzVector(q), TAttLockable(q) {}
+   ANL4DVector(const ANL4DVector &q) : TLorentzVector(q), lcme::TAttLockable(q) {}
 
    virtual ~ANL4DVector() {}
 

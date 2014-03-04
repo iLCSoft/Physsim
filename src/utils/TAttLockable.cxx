@@ -20,4 +20,4 @@
 //  Base Class for Lockale Objects
 //  ------------------------------
 //
-ClassImp(TAttLockable)
+ClassImp(lcme::TAttLockable)

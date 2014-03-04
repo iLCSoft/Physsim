@@ -29,7 +29,7 @@ class GENBranch;
 //  class GENDecayMode
 // =====================
 //-----------------------------------------------------------------------
-class GENDecayMode : public TObjArray, public TAttLockable {
+class GENDecayMode : public TObjArray, public lcme::TAttLockable {
 friend class GENModePicker;
 public:
    GENDecayMode(Double_t gm = 0.) : fGamma(gm), fBR(0.), fCumBR(0.) {}

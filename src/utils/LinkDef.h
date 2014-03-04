@@ -4,6 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class TAttLockable+;
+#pragma link C++ class lcme::TAttLockable+;
 
 #endif
