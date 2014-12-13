@@ -44,7 +44,8 @@ namespace lcme{
    fZModePtr  (0),
    f3Ptr      (0),
    f4Ptr      (0),
-   fZBosonPtr (0)
+   fZBosonPtr (0),
+   fPropagator(0)
   {
     //  Constructor of bases.  Default parameter should be initialized here
     //
@@ -181,6 +182,8 @@ namespace lcme{
     // -------------------
     Double_t  color = f3Ptr->GetColor();
     Complex_t amp   = FullAmplitude();
+    if (GetPropagator()) amp   *= GetHiggsPropagator(fM[0]*fM[0]) *
+			          GetHiggsPropagator(fM[1]*fM[1]);
     Double_t  amp2  = TMath::Power(abs(amp),2) * color;
     
     // -------------------

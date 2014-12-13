@@ -44,7 +44,12 @@ namespace lcme{
    fZModePtr  (0),
    f3Ptr      (0),
    f4Ptr      (0),
-   fZBosonPtr (0)
+   fZBosonPtr (0),
+   iAnomalous (kFALSE),
+   fA1 (1),
+   fA2 (0),
+   fA3 (0),
+   fPropagator(0)
   {
     //  Constructor of bases.  Default parameter should be initialized here
     //
@@ -81,8 +86,8 @@ namespace lcme{
     Double_t sigmaRL = GetMatrixElement2(vHelRL);
     Double_t sigmaRR = GetMatrixElement2(vHelRR);
     
-    Double_t weightElectron = (1.-fPolElectron)/2.;
-    Double_t weightPositron = (1.+fPolPositron)/2.;
+    Double_t weightElectron = (1.-GetBeamPolE())/2.;
+    Double_t weightPositron = (1.+GetBeamPolP())/2.;
     
     Double_t sigma = 0.;
     sigma += (sigmaLL+sigmaLR)*weightElectron*weightPositron;
@@ -93,7 +98,13 @@ namespace lcme{
   {
     // with initial and final helicities combinations specified
     SetHelicities(vHel);
-    Double_t sigma = DSigmaDX();
+    Double_t sigma = 0;
+    if (GetMEType() == 1) {
+      sigma = DSigmaDX();   // differential cross section
+    }
+    else if (GetMEType() == 2) {
+      sigma = TMath::Power(abs(FullAmplitude()),2);  // squared matrix element
+    }
     return (sigma);
   }
   
@@ -106,6 +117,7 @@ namespace lcme{
     // --------------------------------------------
     //  Phase space (&& calculate BetaBar)
     // --------------------------------------------
+#if 0
     // H rest frame
     ANL4DVector ph(fLortzH);
     fP[0] = ph;
@@ -118,6 +130,7 @@ namespace lcme{
     fP[2] = pf2;
     fM[1] = pf1.GetMass();
     fM[2] = pf2.GetMass();
+#endif
     Double_t betaf = Beta(fM[1]*fM[1]/fQ2Z,fM[2]*fM[2]/fQ2Z);
     if (betaf <= 0.) return 0.;
     
@@ -129,8 +142,10 @@ namespace lcme{
     Double_t eb     = TMath::Sqrt(fQ2ZH)/2.;
     Double_t pb     = TMath::Sqrt((eb-kM_e)*(eb+kM_e));
     Double_t beta_e = pb/eb;
+#if 0
     fK[0].SetXYZT(0., 0., pb, eb);
     fK[1].SetXYZT(0., 0.,-pb, eb);
+#endif
     
     // --------------------------------------------
     //  Calcuate differential cross section
@@ -171,6 +186,7 @@ namespace lcme{
     // -------------------
     Double_t  color = f3Ptr->GetColor();
     Complex_t amp   = FullAmplitude();
+    if (GetPropagator()) amp   *= GetHiggsPropagator(fM[0]*fM[0]);
     Double_t  amp2  = TMath::Power(abs(amp),2) * color;
     
     // -------------------
@@ -247,8 +263,14 @@ namespace lcme{
     // Higgs Production Amplitude
     //---------------------------
     HELVector zs(em, ep, glze, grze, kM_z, gamz);
+    Double_t mz     = fZBosonPtr->GetMass();
     Double_t gzzh  = kGz*kM_z;
-    HELVertex amp(zs, zf, h, gzzh);         // HHH self-coupling
+    Double_t  vev    = 2.*mz/kGz;
+    Double_t g1 = gzzh * fA1;
+    Double_t g2 = fA2/vev;
+    Double_t g3 = fA3/vev;
+    //    HELVertex amp(zs, zf, h, gzzh);         
+    HELVertex amp = iAnomalous? HELVertex(zs, zf, h, g1, g2, g3) : HELVertex(zs, zf, h, gzzh);         
 #endif /* end __PHASESPACE__ */
     
     return amp;
@@ -317,6 +339,25 @@ namespace lcme{
     // ZH rest frame
     //    TLorentzVector fLortzZH = fLortzZ + fLortzH;
     GetVariablesInRestFrame(fLortzZ,fLortzH,fQ2ZH,fCosTheta,fPhi);    
+
+    // feed to internal variables
+    // H rest frame
+    ANL4DVector ph(fLortzH);
+    fP[0] = ph;
+    fM[0] = ph.GetMass();
+    // Z rest frame
+    ANL4DVector pf1(fLortzZf1);
+    ANL4DVector pf2(fLortzZf2);
+    fP[1] = pf1;
+    fP[2] = pf2;
+    fM[1] = pf1.GetMass();
+    fM[2] = pf2.GetMass();
+    // initial beam
+    Double_t eb     = TMath::Sqrt(fQ2ZH)/2.;
+    Double_t pb     = TMath::Sqrt((eb-kM_e)*(eb+kM_e));
+    fK[0].SetXYZT(0., 0., pb, eb);
+    fK[1].SetXYZT(0., 0.,-pb, eb);
+
   }
   
   //_____________________________________________________________________________

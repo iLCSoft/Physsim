@@ -50,6 +50,7 @@ namespace lcme{
     Double_t GetQ2Z      ()           const { return fQ2Z;       }
     Double_t GetCosThetaF()           const { return fCosThetaF; }
     Double_t GetPhiF     ()           const { return fPhiF;      }
+    Bool_t   GetPropagator ()         const { return fPropagator;  }
     
     // ----------------------
     //   Base class methods
@@ -59,6 +60,7 @@ namespace lcme{
     void     SetMass     (Double_t m      ) { fMass      = m;    }
     void     SetMomentumFinal(TLorentzVector vLortz[]); // set four-momenta of final states
     void     SetZDecayMode(Int_t iDecayMode = 1);             // set Z decay mode
+    void     SetPropagator(Bool_t i) {fPropagator = i;};
     
     // ----------------------
     //   Utility methods
@@ -112,7 +114,13 @@ namespace lcme{
     Double_t       fCosThetaF;      // cos(theta_f) in Z   frame
     Double_t       fPhiF;           // phi_f        in Z   frame
     
+    Bool_t         iAnomalous;      // switch of anomalous hzz coupling
+    Double_t       fA1;             
+    Double_t       fA2;
+    Double_t       fA3;
     
+    Bool_t         fPropagator;     // including B-W of Higgs
+
     ClassDef(LCMEZH, 1) // Matrix Element for e+e- -> ZH process
   };
 }

@@ -41,7 +41,12 @@ namespace lcme{
 		   Double_t polE,
 		   Double_t polP)
   :LCMEBase(name,title,polE,polP),
-   fZBosonPtr (0)
+   fZBosonPtr (0),
+   iAnomalous (kFALSE),
+   fA1 (1),
+   fA2 (0),
+   fA3 (0),
+   fPropagator(0)
   {
     //  Constructor of bases.  Default parameter should be initialized here
     //
@@ -137,6 +142,7 @@ namespace lcme{
     //  Amplitude squared
     // -------------------
     Complex_t amp   = FullAmplitude();
+    if (GetPropagator()) amp   *= GetHiggsPropagator(fM[0]*fM[0]);
     Double_t  amp2  = TMath::Power(abs(amp),2);
     
     // -------------------
@@ -210,7 +216,11 @@ namespace lcme{
     HELVector z2(eb, ep, glze, grze, mz, gamz);
     
     Double_t  gzzh   = kGz*mz;
-    Complex_t amp = HELVertex(z1, z2, hs, gzzh);
+    Double_t  vev    = 2.*mz/kGz;
+    Double_t g1 = gzzh * fA1;
+    Double_t g2 = fA2/vev;
+    Double_t g3 = fA3/vev;
+    Complex_t amp = iAnomalous? HELVertex(z1,z2,hs,g1,g2,g3) : HELVertex(z1, z2, hs, gzzh);
 #endif /* end __PHASESPACE__ */
     
     return amp;
@@ -312,5 +322,17 @@ namespace lcme{
     fHelFinal  [0] = kFHelComb[iJCombF][0];
     fHelFinal  [1] = kFHelComb[iJCombF][1];
     fHelFinal  [2] = kFHelComb[iJCombF][2];
+  }
+
+  //_____________________________________________________________________________
+  // --------------------------
+  //  SetAnomalous
+  // --------------------------
+  void LCMEEEH::SetAnomalous(Double_t a1, Double_t a2, Double_t a3)
+  {
+    iAnomalous = kTRUE;
+    fA1 = a1;
+    fA2 = a2;
+    fA3 = a3;
   }
 }

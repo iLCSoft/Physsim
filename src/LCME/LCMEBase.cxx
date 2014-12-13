@@ -27,10 +27,10 @@ ClassImp(lcme::LCMEBase)
 //  class LCMEBase
 // ==============================
 //_____________________________________________________________________________
-// --------------------------
-//  C-tor
-// --------------------------
 namespace lcme{
+  // --------------------------
+  //  C-tor
+  // --------------------------
   LCMEBase::LCMEBase(const char *name, const char *title,
 		     Double_t polE,
 		     Double_t polP)
@@ -39,6 +39,24 @@ namespace lcme{
     //
     //  cout << "Init LCMEBase " << endl;
     SetBeamPol(polE,polP);
+    SetMEType(1);
+    SetPropagatorType(1);
+    SetHiggsMass(125.);
+    SetHiggsWidth(0.0043);
+    //  Initialize();
+  }
+  // --------------------------
+  LCMEBase::LCMEBase(const char *name, const char *title,
+		     Double_t polE, Double_t polP, Int_t typeME)
+  {
+    //  Constructor of bases.  Default parameter should be initialized here
+    //
+    //  cout << "Init LCMEBase " << endl;
+    SetBeamPol(polE,polP);
+    SetMEType(typeME);
+    SetPropagatorType(1);
+    SetHiggsMass(125.);
+    SetHiggsWidth(0.0043);
     //  Initialize();
   }
   // --------------------------
@@ -80,6 +98,38 @@ namespace lcme{
   {
     fPolElectron = polE;
     fPolPositron = polP;
+  }
+
+  //_____________________________________________________________________________
+  // --------------------------
+  //  Higgs Propagator
+  // --------------------------
+  Complex_t LCMEBase::GetHiggsPropagator(Double_t q2)
+  {
+    Complex_t bw;
+    if (GetPropagatorType() == 1) {
+      std::cout << "Higgs Propagator (Breit-Wigner) is called: sqrt(Q2) = " << TMath::Sqrt(q2) << std::endl;
+      bw = 1./Complex_t(q2-fMass*fMass, fMass*fWidth);
+    }
+    else if (GetPropagatorType() == 2) {
+      std::cout << "Higgs Propagator (Effective Gaussian) is called: sqrt(Q2) = " << TMath::Sqrt(q2) << std::endl;
+      bw = TMath::Exp(-(TMath::Sqrt(q2)-fMass)*(TMath::Sqrt(q2)-fMass)/fWidth/fWidth/4.);
+    }
+      return bw;
+  }
+  // --------------------------
+  Complex_t LCMEBase::GetBosonPropagator(Double_t q2, Double_t mass, Double_t width)
+  {
+    Complex_t bw;
+    if (GetPropagatorType() == 1) {
+      std::cout << "Boson Propagator (Breit-Wigner) is called: sqrt(Q2) = " << TMath::Sqrt(q2) << "; Mass = " << mass << "; Width = " << width << std::endl;
+      bw = 1./Complex_t(q2-mass*mass, mass*width);
+    }
+    else if (GetPropagatorType() == 2) {
+      std::cout << "Boson Propagator (Effective Gaussian) is called: sqrt(Q2) = " << TMath::Sqrt(q2) << "; Mass = " << mass << "; Width = " << width << std::endl;
+      bw = TMath::Exp(-(TMath::Sqrt(q2)-mass)*(TMath::Sqrt(q2)-mass)/width/width/4.);
+    }
+    return bw;
   }
 
   //_____________________________________________________________________________

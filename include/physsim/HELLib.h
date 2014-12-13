@@ -35,6 +35,7 @@ public:
   TVectorC(Int_t n = 4) { fData[0]=0.; fData[1]=0.; fData[2]=0.; fData[3]=0.; }
 #endif
   //  TVectorC(const TVectorC &src) : fData(src.fData) {}
+  // fg: the above does not compile, e.g. on clang
   TVectorC(const TVectorC &src) { fData[0]=src[0]; fData[1]=src[1]; fData[2]=src[2]; fData[3]=src[3]; }
 
   Complex_t  operator[](Int_t i) const { return fData[i]; }
@@ -136,12 +137,31 @@ public:
 		   Double_t    g,
 		   Double_t    m,
 		   Double_t    gm);
+   HELVector (Double_t ebm, 
+              Double_t eef,
+	      Double_t sh,
+	      Double_t ch,
+	      Double_t fi,
+	      Int_t    helbm,
+	      Int_t    helef,
+	      Int_t    nsf,
+	      Double_t ge = TMath::Sqrt(4.*TMath::Pi()/128.),
+	      Double_t me = 0.510998902e-3);
+   HELVector (Complex_t v0,
+              Complex_t v1,
+              Complex_t v2,
+              Complex_t v3,
+	      const ANL4DVector &p);
+
    virtual ~HELVector() {}
 
    inline const ANL4DVector &GetFourMomentum() const  { return fP;   }
    inline       Double_t     GetMass        () const  { return fM;   }
    inline       Int_t        GetHelicity    () const  { return fHel; }
    inline       Int_t        GetNSV         () const  { return fNSV; }
+#if 1
+   void DebugPrint() const;
+#endif
    
 private:
    ANL4DVector fP;                // 4-momentum * fNSV
@@ -177,6 +197,13 @@ public:
    HELScalar(const HELVector  &v1,
              const HELVector  &v2,
                    Double_t    g,
+                   Double_t    m,
+                   Double_t    gm);
+   HELScalar(const HELVector  &v1,
+             const HELVector  &v2,
+                   Double_t    g1,
+                   Double_t    g2,
+                   Double_t    g3,
                    Double_t    m,
                    Double_t    gm);
    HELScalar(const HELFermion &in,
@@ -217,8 +244,36 @@ public:
                    Double_t    g);
    HELVertex(const HELVector  &v1,
              const HELVector  &v2,
+             const HELScalar  &sc,
+                   Double_t    g1,
+                   Double_t    g2,
+                   Double_t    g3);
+   HELVertex(const HELVector  &v1,
+             const HELVector  &v2,
              const HELVector  &v3,
                    Double_t    g);
+   HELVertex(const HELVector  &wm,
+             const HELVector  &w31,
+             const HELVector  &wp,
+             const HELVector  &w32,
+                   Double_t    g31,
+                   Double_t    g32,
+                   Double_t    mw,
+                   Double_t    gamw,
+                   Bool_t      mode);
+   HELVertex(const HELVector  &wm1,
+             const HELVector  &wp1,
+             const HELVector  &wm2,
+             const HELVector  &wp2,
+                   Double_t    gwwa,
+                   Double_t    gwwz,
+                   Double_t    mz,
+                   Double_t    gamz);
+   HELVertex(const HELVector  &v1,
+             const HELVector  &v2,
+             const HELVector  &v3,
+             const HELVector  &v4,
+                   Double_t     g);
    HELVertex(const HELVector  &vc,
              const HELScalar  &s1,
              const HELScalar  &s2,

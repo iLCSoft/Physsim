@@ -170,8 +170,8 @@ HELFermion::HELFermion(const HELFermion &f,
          (*this)[3] = gl * ((fP(0) + fP(3))*sl2 - (fP(1) - fP(2)*kI)*sl1)*d;
       } else {
          Complex_t sr1 =   (v[0] -    v[3])*f[0]
-                         - (v[1] - kI*v[2])*f[1];
-         Complex_t sr2 = - (v[1] + kI*v[2])*f[0]
+                         - (v[1] + kI*v[2])*f[1];
+         Complex_t sr2 = - (v[1] - kI*v[2])*f[0]
                          + (v[0] +    v[3])*f[1];
          (*this)[0] = ( gr * ((fP(0) + fP(3))*sr1 + (fP(1) + fP(2)*kI)*sr2)
                       + gl * m * sl1) * d;
@@ -272,6 +272,22 @@ HELVector::HELVector(const ANL4DVector &p,
                                  << nsv*fP.Py() << ", "
                                  << nsv*fP.Pz() << ") " << endl;
 #endif
+}
+
+HELVector::HELVector(Complex_t v0,
+                     Complex_t v1,
+                     Complex_t v2,
+                     Complex_t v3,
+                     const ANL4DVector &p)
+	  : fM(0),
+            fHel(0),
+            fNSV(0)
+{
+   (*this)[0] = v0;
+   (*this)[1] = v1;
+   (*this)[2] = v2;
+   (*this)[3] = v3;
+   fP = p;
 }
 
 //----------
@@ -495,6 +511,78 @@ HELVector::HELVector(const HELVector  &v1,
    }
 }
 
+//----------
+// JEEXXX()
+//----------
+HELVector::HELVector (Double_t ebm, 
+                      Double_t eef,
+	              Double_t sh,
+	              Double_t ch,
+	              Double_t fi,
+	              Int_t    helbm,
+	              Int_t    helef,
+	              Int_t    nsf,
+		      Double_t ge,
+		      Double_t me)
+          : TVectorC(4),
+	    fM(0.),
+            fHel(0),
+            fNSV(0)
+{
+   Double_t hi  = helbm;
+   Double_t sf  = nsf;
+   Double_t sfh = helbm*nsf;
+   Double_t cs[2];
+   cs[(1+nsf)/2] = sh;
+   cs[(1-nsf)/2] = ch;
+
+   Double_t x   = eef/ebm;
+   Double_t me2 = me*me;
+   Double_t q2  = -4.*cs[1]*cs[1]*(eef*ebm-me2)
+	          + sf*(1.-x)*(1-x)/x*(sh+ch)*(sh-ch)*me2;
+   Double_t rfp = 1 + nsf;
+   Double_t rfm = 1 - nsf;
+   Double_t cfi = TMath::Cos(fi);
+   Double_t sfi = TMath::Sin(fi);
+
+   if (helbm == helef) {
+      Double_t  rxc   = 2.*x/(1.-x)*cs[0]*cs[0];
+      Complex_t coeff = ge*2.*ebm*TMath::Sqrt(x)*cs[1]/q2
+	               *(Complex_t(rfp,0.)-rfm*Complex_t(cfi, -sfi*hi))*0.5;
+      (*this)[0] =  Complex_t(0., 0.);
+      (*this)[1] =  coeff*Complex_t((1.+rxc)*cfi, -sfh*sfi);
+      (*this)[2] =  coeff*Complex_t((1.+rxc)*sfi,  sfh*cfi);
+      (*this)[3] =  coeff*(-sf*rxc/cs[0]*cs[1]);
+   } else {
+      Complex_t coeff = ge*me/q2/TMath::Sqrt(x)
+	               *(Complex_t(rfp,0.)+rfm*Complex_t(cfi, sfi*hi))*0.5*hi;
+      (*this)[0] = -coeff*(1.+x)*cs[1]*Complex_t(cfi, sfh*sfi);
+      (*this)[1] =  coeff*(1.-x)*cs[0];
+      (*this)[2] =  (*this)[1]*Complex_t(0., sfh);
+      (*this)[3] =  (*this)[0]*sf*(1.-x)/(1.+x);
+   }
+   Double_t cth = (ch+sh)*(ch-sh);
+   Double_t sth  = 2.*sh*ch;
+
+   fP(0) = -ebm*(1. - x);
+   fP(1) = ebm*x*sth*cfi;
+   fP(2) = ebm*x*sth*sfi;
+   fP(3) = -ebm*(sf - x*cth);
+}
+
+void HELVector::DebugPrint() const
+{
+   cerr << "p=(" << fP(0) << ", "
+                 << fP(1) << ", "
+                 << fP(2) << ", "
+                 << fP(3) << ") " << endl;
+   cerr << "v=(" << (*this)[0] << ", "
+	         << (*this)[1] << ", "
+	         << (*this)[2] << ", "
+	         << (*this)[3] << ") " << endl;
+}
+
+
 //-----------------------------------------------------------------------------
 // ==============================
 //  class HELScalar
@@ -568,6 +656,55 @@ HELScalar::HELScalar(const HELVector  &v1,
 
    this->Complex_t::operator=(dg * (v1[0]*v2[0] - v1[1]*v2[1] - v1[2]*v2[2] - v1[3]*v2[3]));
 }
+// For anomalous VVh coupling
+HELScalar::HELScalar(const HELVector  &v1,
+                     const HELVector  &v2,
+                           Double_t    g1, // gvh + 2*mv^2*(a/Lamda)
+                           Double_t    g2, // -2*(b/Lambda)
+                           Double_t    g3, // -4*(btilde/Lambda)
+                           Double_t    m,
+                           Double_t    gm)
+          : fP(v1.fP + v2.fP),
+            fNSS(1)
+{
+   Double_t  q2  = fP.Mag2();
+   Double_t  mg  = TMath::Max(TMath::Sign(m*gm, q2), 0.);
+   Complex_t d  = Complex_t(-1.,0.)/Complex_t(q2 - m*m, mg);
+
+   Double_t  p1p2 = v1.fP*v2.fP;
+   Complex_t p1v2 = v1.fP(0)*v2[0]-v1.fP(1)*v2[1]-v1.fP(2)*v2[2]-v1.fP(3)*v2[3];
+   Complex_t p2v1 = v2.fP(0)*v1[0]-v2.fP(1)*v1[1]-v2.fP(2)*v1[2]-v2.fP(3)*v1[3];
+   Complex_t v1v2 = v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3];
+
+   Complex_t ans  = g1*v1v2;
+             ans += g2*(p1p2*v1v2-p1v2*p2v1);
+             ans += g3*(v1.fP(0)*v1[1]*v2.fP(2)*v2[3]
+                       -v1.fP(0)*v1[1]*v2.fP(3)*v2[2]
+                       -v1.fP(0)*v1[2]*v2.fP(1)*v2[3]
+                       +v1.fP(0)*v1[2]*v2.fP(3)*v2[1]
+                       +v1.fP(0)*v1[3]*v2.fP(1)*v2[2]
+                       -v1.fP(0)*v1[3]*v2.fP(2)*v2[1]
+                       -v1.fP(1)*v1[0]*v2.fP(2)*v2[3]
+                       +v1.fP(1)*v1[0]*v2.fP(3)*v2[2]
+                       +v1.fP(1)*v1[2]*v2.fP(0)*v2[3]
+                       -v1.fP(1)*v1[2]*v2.fP(3)*v2[0]
+                       -v1.fP(1)*v1[3]*v2.fP(0)*v2[2]
+                       +v1.fP(1)*v1[3]*v2.fP(2)*v2[0]
+                       +v1.fP(2)*v1[0]*v2.fP(1)*v2[3]
+                       -v1.fP(2)*v1[0]*v2.fP(3)*v2[1]
+                       -v1.fP(2)*v1[1]*v2.fP(0)*v2[3]
+                       +v1.fP(2)*v1[1]*v2.fP(3)*v2[0]
+                       +v1.fP(2)*v1[3]*v2.fP(0)*v2[1]
+                       -v1.fP(2)*v1[3]*v2.fP(1)*v2[0]
+                       -v1.fP(3)*v1[0]*v2.fP(1)*v2[2]
+                       +v1.fP(3)*v1[0]*v2.fP(2)*v2[1]
+                       +v1.fP(3)*v1[1]*v2.fP(0)*v2[2]
+                       -v1.fP(3)*v1[1]*v2.fP(2)*v2[0]
+                       -v1.fP(3)*v1[2]*v2.fP(0)*v2[1]
+                       +v1.fP(3)*v1[2]*v2.fP(1)*v2[0]);
+             ans *= d;
+   this->Complex_t::operator=(ans);
+}
 
 //----------
 // HIOXXX()
@@ -638,6 +775,47 @@ HELVertex::HELVertex(const HELVector &v1,
 	   cerr << " vvs =(" << (*this) << endl;
 #endif
 }
+// For anomalous VVh coupling
+HELVertex::HELVertex(const HELVector  &v1,
+                     const HELVector  &v2,
+                     const HELScalar  &sc,
+                           Double_t    g1, // gvh + 2*mv^2*(a/Lamda)
+                           Double_t    g2, // -2*(b/Lambda)
+                           Double_t    g3) // -4*(btilde/Lambda)
+{
+   Double_t  p1p2 = v1.fP*v2.fP;
+   Complex_t p1v2 = v1.fP(0)*v2[0]-v1.fP(1)*v2[1]-v1.fP(2)*v2[2]-v1.fP(3)*v2[3];
+   Complex_t p2v1 = v2.fP(0)*v1[0]-v2.fP(1)*v1[1]-v2.fP(2)*v1[2]-v2.fP(3)*v1[3];
+   Complex_t v1v2 = v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3];
+
+   Complex_t ans  = g1*v1v2;
+             ans += g2*(p1p2*v1v2-p1v2*p2v1);
+             ans += g3*(v1.fP(0)*v1[1]*v2.fP(2)*v2[3]
+                       -v1.fP(0)*v1[1]*v2.fP(3)*v2[2]
+                       -v1.fP(0)*v1[2]*v2.fP(1)*v2[3]
+                       +v1.fP(0)*v1[2]*v2.fP(3)*v2[1]
+                       +v1.fP(0)*v1[3]*v2.fP(1)*v2[2]
+                       -v1.fP(0)*v1[3]*v2.fP(2)*v2[1]
+                       -v1.fP(1)*v1[0]*v2.fP(2)*v2[3]
+                       +v1.fP(1)*v1[0]*v2.fP(3)*v2[2]
+                       +v1.fP(1)*v1[2]*v2.fP(0)*v2[3]
+                       -v1.fP(1)*v1[2]*v2.fP(3)*v2[0]
+                       -v1.fP(1)*v1[3]*v2.fP(0)*v2[2]
+                       +v1.fP(1)*v1[3]*v2.fP(2)*v2[0]
+                       +v1.fP(2)*v1[0]*v2.fP(1)*v2[3]
+                       -v1.fP(2)*v1[0]*v2.fP(3)*v2[1]
+                       -v1.fP(2)*v1[1]*v2.fP(0)*v2[3]
+                       +v1.fP(2)*v1[1]*v2.fP(3)*v2[0]
+                       +v1.fP(2)*v1[3]*v2.fP(0)*v2[1]
+                       -v1.fP(2)*v1[3]*v2.fP(1)*v2[0]
+                       -v1.fP(3)*v1[0]*v2.fP(1)*v2[2]
+                       +v1.fP(3)*v1[0]*v2.fP(2)*v2[1]
+                       +v1.fP(3)*v1[1]*v2.fP(0)*v2[2]
+                       -v1.fP(3)*v1[1]*v2.fP(2)*v2[0]
+                       -v1.fP(3)*v1[2]*v2.fP(0)*v2[1]
+                       +v1.fP(3)*v1[2]*v2.fP(1)*v2[0]);
+   this->Complex_t::operator=(ans);
+}
 
 //----------
 // VVVXXX()
@@ -689,6 +867,237 @@ HELVertex::HELVertex(const HELVector &wm,
 	   cerr << " vvv =(" << (*this) << endl;
 #endif
 }
+
+//----------
+// W3W3XX()
+//----------
+// The possible sets of the inputs are as follows:                       
+//    -------------------------------------------                         
+//    |  WM  |  W31 |  WP  |  W32 |  G31 |  G32 |                         
+//    -------------------------------------------                         
+//    |  W-  |  W3  |  W+  |  W3  |  GW  |  GW  |                         
+//    |  W-  |  W3  |  W+  |  Z   |  GW  | GWWZ |                         
+//    |  W-  |  W3  |  W+  |  A   |  GW  | GWWA |                         
+//    |  W-  |  Z   |  W+  |  Z   | GWWZ | GWWZ |                         
+//    |  W-  |  Z   |  W+  |  A   | GWWZ | GWWA |                         
+//    |  W-  |  A   |  W+  |  A   | GWWA | GWWA |                         
+//    -------------------------------------------                         
+// where all the bosons are defined by the flowing-OUT quantum number.   
+
+HELVertex::HELVertex(const HELVector  &wm,
+                     const HELVector  &w31,
+                     const HELVector  &wp,
+                     const HELVector  &w32,
+                           Double_t    g31,
+                           Double_t    g32,
+                           Double_t    mw,
+                           Double_t    gamw,
+                           Bool_t      mode)
+{
+   mode = mode;
+   Complex_t v12 = wm [0]*w31[0] - wm [1]*w31[1] - wm [2]*w31[2] - wm [3]*w31[3];
+   Complex_t v13 = wm [0]*wp [0] - wm [1]*wp [1] - wm [2]*wp [2] - wm [3]*wp [3];
+   Complex_t v14 = wm [0]*w32[0] - wm [1]*w32[1] - wm [2]*w32[2] - wm [3]*w32[3];
+   Complex_t v23 = w31[0]*wp [0] - w31[1]*wp [1] - w31[2]*wp [2] - w31[3]*wp [3];
+   Complex_t v24 = w31[0]*w32[0] - w31[1]*w32[1] - w31[2]*w32[2] - w31[3]*w32[3];
+   Complex_t v34 = wp [0]*w32[0] - wp [1]*w32[1] - wp [2]*w32[2] - wp [3]*w32[3];
+
+   ANL4DVector q = wm.fP + w31.fP;
+   ANL4DVector k = wm.fP + w32.fP;
+
+   Double_t s    = q*q;
+   Double_t t    = k*k;
+   Double_t mw2  = mw*mw;
+   Complex_t dws = -1./Complex_t(s-mw2, TMath::Max(TMath::Sign(mw*gamw,s), 0.));
+   Complex_t dwt = -1./Complex_t(t-mw2, TMath::Max(TMath::Sign(mw*gamw,t), 0.));
+
+   Complex_t sv1 =   (w31.fP(0)+q(0))*wm [0] - (w31.fP(1)+q(1))*wm [1]
+                   - (w31.fP(2)+q(2))*wm [2] - (w31.fP(3)+q(3))*wm [3];
+   Complex_t sv2 = - (wm .fP(0)+q(0))*w31[0] + (wm .fP(1)+q(1))*w31[1]
+                   + (wm .fP(2)+q(2))*w31[2] + (wm .fP(3)+q(3))*w31[3];
+   Complex_t sv3 =   (w32.fP(0)-q(0))*wp [0] - (w32.fP(1)-q(1))*wp [1]
+                   - (w32.fP(2)-q(2))*wp [2] - (w32.fP(3)-q(3))*wp [3];
+   Complex_t sv4 = - (wp .fP(0)-q(0))*w32[0] + (wp .fP(1)-q(1))*w32[1]
+                   + (wp .fP(2)-q(2))*w32[2] + (wp .fP(3)-q(3))*w32[3];
+
+   Complex_t tv1 =   (w32.fP(0)+k(0))*wm [0] - (w32.fP(1)+k(1))*wm [1]
+                   - (w32.fP(2)+k(2))*wm [2] - (w32.fP(3)+k(3))*wm [3];
+   Complex_t tv2 = - (wp .fP(0)-k(0))*w31[0] + (wp .fP(1)-k(1))*w31[1]
+                   + (wp .fP(2)-k(2))*w31[2] + (wp .fP(3)-k(3))*w31[3];
+   Complex_t tv3 =   (w31.fP(0)-k(0))*wp [0] - (w31.fP(1)-k(1))*wp [1]
+                   - (w31.fP(2)-k(2))*wp [2] - (w31.fP(3)-k(3))*wp [3];
+   Complex_t tv4 = - (wm .fP(0)+k(0))*w32[0] + (wm .fP(1)+k(1))*w32[1]
+                   + (wm .fP(2)+k(2))*w32[2] + (wm .fP(3)+k(3))*w32[3];
+
+   TVectorC j12, j34, j14, j32;
+   j12[0] = (wm .fP(0)-w31.fP(0))*v12 + sv1*w31[0] + sv2*wm [0];
+   j12[1] = (wm .fP(1)-w31.fP(1))*v12 + sv1*w31[1] + sv2*wm [1];
+   j12[2] = (wm .fP(2)-w31.fP(2))*v12 + sv1*w31[2] + sv2*wm [2];
+   j12[3] = (wm .fP(3)-w31.fP(3))*v12 + sv1*w31[3] + sv2*wm [3];
+
+   j34[0] = (wp .fP(0)-w32.fP(0))*v34 + sv3*w32[0] + sv4*wp [0];
+   j34[1] = (wp .fP(1)-w32.fP(1))*v34 + sv3*w32[1] + sv4*wp [1];
+   j34[2] = (wp .fP(2)-w32.fP(2))*v34 + sv3*w32[2] + sv4*wp [2];
+   j34[3] = (wp .fP(3)-w32.fP(3))*v34 + sv3*w32[3] + sv4*wp [3];
+
+   j14[0] = (wm .fP(0)-w32.fP(0))*v14 + tv1*w32[0] + tv4*wm [0];
+   j14[1] = (wm .fP(1)-w32.fP(1))*v14 + tv1*w32[1] + tv4*wm [1];
+   j14[2] = (wm .fP(2)-w32.fP(2))*v14 + tv1*w32[2] + tv4*wm [2];
+   j14[3] = (wm .fP(3)-w32.fP(3))*v14 + tv1*w32[3] + tv4*wm [3];
+
+   j32[0] = (wp .fP(0)-w31.fP(0))*v23 + tv3*w31[0] + tv2*wp [0];
+   j32[1] = (wp .fP(1)-w31.fP(1))*v23 + tv3*w31[1] + tv2*wp [1];
+   j32[2] = (wp .fP(2)-w31.fP(2))*v23 + tv3*w31[2] + tv2*wp [2];
+   j32[3] = (wp .fP(3)-w31.fP(3))*v23 + tv3*w31[3] + tv2*wp [3];
+
+   Complex_t js12 = q(0)*j12[0] - q(1)*j12[1] - q(2)*j12[2] - q(3)*j12[3];
+   Complex_t js34 = q(0)*j34[0] - q(1)*j34[1] - q(2)*j34[2] - q(3)*j34[3];
+   Complex_t js14 = k(0)*j14[0] - k(1)*j14[1] - k(2)*j14[2] - k(3)*j14[3];
+   Complex_t js32 = k(0)*j32[0] - k(1)*j32[1] - k(2)*j32[2] - k(3)*j32[3];
+
+   Complex_t js = j12[0]*j34[0] - j12[1]*j34[1] - j12[2]*j34[2] - j12[3]*j34[3];
+   Complex_t jt = j14[0]*j32[0] - j14[1]*j32[1] - j14[2]*j32[2] - j14[3]*j32[3];
+
+   Complex_t vertex = v12*v34 + v14*v23 - 2.*v13*v24
+                    + dws*(js - js12*js34/mw2) + dwt*(jt - js14*js32/mw2);
+   *this = vertex * (g31*g32);
+}
+
+//----------
+// WWWWXX()
+//----------
+HELVertex::HELVertex(const HELVector  &wm1,
+                     const HELVector  &wp1,
+                     const HELVector  &wm2,
+                     const HELVector  &wp2,
+                           Double_t    gwwa,
+                           Double_t    gwwz,
+                           Double_t    mz,
+                           Double_t    gamz)
+{
+   Complex_t v12 = wm1[0]*wp1[0] - wm1[1]*wp1[1] - wm1[2]*wp1[2] - wm1[3]*wp1[3];
+   Complex_t v13 = wm1[0]*wm2[0] - wm1[1]*wm2[1] - wm1[2]*wm2[2] - wm1[3]*wm2[3];
+   Complex_t v14 = wm1[0]*wp2[0] - wm1[1]*wp2[1] - wm1[2]*wp2[2] - wm1[3]*wp2[3];
+   Complex_t v23 = wp1[0]*wm2[0] - wp1[1]*wm2[1] - wp1[2]*wm2[2] - wp1[3]*wm2[3];
+   Complex_t v24 = wp1[0]*wp2[0] - wp1[1]*wp2[1] - wp1[2]*wp2[2] - wp1[3]*wp2[3];
+   Complex_t v34 = wm2[0]*wp2[0] - wm2[1]*wp2[1] - wm2[2]*wp2[2] - wm2[3]*wp2[3];
+
+   ANL4DVector q = wm1.fP + wp1.fP;
+   ANL4DVector k = wm1.fP + wp2.fP;
+
+   Double_t s    = q*q;
+   Double_t t    = k*k;
+   Double_t mz2  = mz*mz;
+   Complex_t das = -1./s;
+   Complex_t dat = -1./t;
+   Complex_t dzs = -1./Complex_t(s-mz2, TMath::Max(TMath::Sign(mz*gamz,s), 0.));
+   Complex_t dzt = -1./Complex_t(t-mz2, TMath::Max(TMath::Sign(mz*gamz,t), 0.));
+
+   Complex_t sv1 =   (wp1.fP(0)+q(0))*wm1[0] - (wp1.fP(1)+q(1))*wm1[1]
+                   - (wp1.fP(2)+q(2))*wm1[2] - (wp1.fP(3)+q(3))*wm1[3];
+   Complex_t sv2 = - (wm1.fP(0)+q(0))*wp1[0] + (wm1.fP(1)+q(1))*wp1[1]
+                   + (wm1.fP(2)+q(2))*wp1[2] + (wm1.fP(3)+q(3))*wp1[3];
+   Complex_t sv3 =   (wp2.fP(0)-q(0))*wm2[0] - (wp2.fP(1)-q(1))*wm2[1]
+                   - (wp2.fP(2)-q(2))*wm2[2] - (wp2.fP(3)-q(3))*wm2[3];
+   Complex_t sv4 = - (wm2.fP(0)-q(0))*wp2[0] + (wm2.fP(1)-q(1))*wp2[1]
+                   + (wm2.fP(2)-q(2))*wp2[2] + (wm2.fP(3)-q(3))*wp2[3];
+
+   Complex_t tv1 =   (wp2.fP(0)+k(0))*wm1[0] - (wp2.fP(1)+k(1))*wm1[1]
+                   - (wp2.fP(2)+k(2))*wm1[2] - (wp2.fP(3)+k(3))*wm1[3];
+   Complex_t tv2 = - (wm2.fP(0)-k(0))*wp1[0] + (wm2.fP(1)-k(1))*wp1[1]
+                   + (wm2.fP(2)-k(2))*wp1[2] + (wm2.fP(3)-k(3))*wp1[3];
+   Complex_t tv3 =   (wp1.fP(0)-k(0))*wm2[0] - (wp1.fP(1)-k(1))*wm2[1]
+                   - (wp1.fP(2)-k(2))*wm2[2] - (wp1.fP(3)-k(3))*wm2[3];
+   Complex_t tv4 = - (wm1.fP(0)+k(0))*wp2[0] + (wm1.fP(1)+k(1))*wp2[1]
+                   + (wm1.fP(2)+k(2))*wp2[2] + (wm1.fP(3)+k(3))*wp2[3];
+
+   TVectorC j12, j34, j14, j32;
+   j12[0] = (wm1.fP(0)-wp1.fP(0))*v12 + sv1*wp1[0] + sv2*wm1[0];
+   j12[1] = (wm1.fP(1)-wp1.fP(1))*v12 + sv1*wp1[1] + sv2*wm1[1];
+   j12[2] = (wm1.fP(2)-wp1.fP(2))*v12 + sv1*wp1[2] + sv2*wm1[2];
+   j12[3] = (wm1.fP(3)-wp1.fP(3))*v12 + sv1*wp1[3] + sv2*wm1[3];
+
+   j34[0] = (wm2.fP(0)-wp2.fP(0))*v34 + sv3*wp2[0] + sv4*wm2[0];
+   j34[1] = (wm2.fP(1)-wp2.fP(1))*v34 + sv3*wp2[1] + sv4*wm2[1];
+   j34[2] = (wm2.fP(2)-wp2.fP(2))*v34 + sv3*wp2[2] + sv4*wm2[2];
+   j34[3] = (wm2.fP(3)-wp2.fP(3))*v34 + sv3*wp2[3] + sv4*wm2[3];
+
+   j14[0] = (wm1.fP(0)-wp2.fP(0))*v14 + tv1*wp2[0] + tv4*wm1[0];
+   j14[1] = (wm1.fP(1)-wp2.fP(1))*v14 + tv1*wp2[1] + tv4*wm1[1];
+   j14[2] = (wm1.fP(2)-wp2.fP(2))*v14 + tv1*wp2[2] + tv4*wm1[2];
+   j14[3] = (wm1.fP(3)-wp2.fP(3))*v14 + tv1*wp2[3] + tv4*wm1[3];
+
+   j32[0] = (wm2.fP(0)-wp1.fP(0))*v23 + tv3*wp1[0] + tv2*wm2[0];
+   j32[1] = (wm2.fP(1)-wp1.fP(1))*v23 + tv3*wp1[1] + tv2*wm2[1];
+   j32[2] = (wm2.fP(2)-wp1.fP(2))*v23 + tv3*wp1[2] + tv2*wm2[2];
+   j32[3] = (wm2.fP(3)-wp1.fP(3))*v23 + tv3*wp1[3] + tv2*wm2[3];
+
+   Complex_t js12 = q(0)*j12[0] - q(1)*j12[1] - q(2)*j12[2] - q(3)*j12[3];
+   Complex_t js34 = q(0)*j34[0] - q(1)*j34[1] - q(2)*j34[2] - q(3)*j34[3];
+   Complex_t js14 = k(0)*j14[0] - k(1)*j14[1] - k(2)*j14[2] - k(3)*j14[3];
+   Complex_t js32 = k(0)*j32[0] - k(1)*j32[1] - k(2)*j32[2] - k(3)*j32[3];
+
+   Complex_t js = j12[0]*j34[0] - j12[1]*j34[1] - j12[2]*j34[2] - j12[3]*j34[3];
+   Complex_t jt = j14[0]*j32[0] - j14[1]*j32[1] - j14[2]*j32[2] - j14[3]*j32[3];
+
+   Double_t gwwa2 = gwwa*gwwa;
+   Double_t gwwz2 = gwwz*gwwz;
+   Double_t dgw2  = gwwa2 + gwwz2;
+   Complex_t vertex = (v12*v34 + v14*v23 - 2.*v13*v24)*dgw2
+                    + (dzs*gwwz2 + das*gwwa2)*js - dzs*gwwz2*js12*js34/mz2
+                    + (dzt*gwwz2 + dat*gwwa2)*jt - dzt*gwwz2*js14*js32/mz2;
+
+   *this = - vertex;
+}
+
+
+//----------
+// GGGGXX()
+//----------
+HELVertex::HELVertex(const HELVector  &wm,
+                     const HELVector  &w31,
+                     const HELVector  &wp,
+                     const HELVector  &w32,
+                           Double_t     g)
+{
+   Complex_t v12 = wm [0]*w31[0] - wm [1]*w31[1] - wm [2]*w31[2] - wm [3]*w31[3];
+   Complex_t v13 = wm [0]*wp [0] - wm [1]*wp [1] - wm [2]*wp [2] - wm [3]*wp [3];
+   Complex_t v14 = wm [0]*w32[0] - wm [1]*w32[1] - wm [2]*w32[2] - wm [3]*w32[3];
+   Complex_t v23 = w31[0]*wp [0] - w31[1]*wp [1] - w31[2]*wp [2] - w31[3]*wp [3];
+   Complex_t v24 = w31[0]*w32[0] - w31[1]*w32[1] - w31[2]*w32[2] - w31[3]*w32[3];
+   Complex_t v34 = wp [0]*w32[0] - wp [1]*w32[1] - wp [2]*w32[2] - wp [3]*w32[3];
+
+   ANL4DVector q = wm.fP + w31.fP;
+
+   Double_t s    = q*q;
+   Complex_t dws = -1./Complex_t(s, 0.);
+
+   Complex_t sv1 =   (w31.fP(0)+q(0))*wm [0] - (w31.fP(1)+q(1))*wm [1]
+                   - (w31.fP(2)+q(2))*wm [2] - (w31.fP(3)+q(3))*wm [3];
+   Complex_t sv2 = - (wm .fP(0)+q(0))*w31[0] + (wm .fP(1)+q(1))*w31[1]
+                   + (wm .fP(2)+q(2))*w31[2] + (wm .fP(3)+q(3))*w31[3];
+   Complex_t sv3 =   (w32.fP(0)-q(0))*wp [0] - (w32.fP(1)-q(1))*wp [1]
+                   - (w32.fP(2)-q(2))*wp [2] - (w32.fP(3)-q(3))*wp [3];
+   Complex_t sv4 = - (wp .fP(0)-q(0))*w32[0] + (wp .fP(1)-q(1))*w32[1]
+                   + (wp .fP(2)-q(2))*w32[2] + (wp .fP(3)-q(3))*w32[3];
+
+   TVectorC j12, j34;
+   j12[0] = (wm .fP(0)-w31.fP(0))*v12 + sv1*w31[0] + sv2*wm [0];
+   j12[1] = (wm .fP(1)-w31.fP(1))*v12 + sv1*w31[1] + sv2*wm [1];
+   j12[2] = (wm .fP(2)-w31.fP(2))*v12 + sv1*w31[2] + sv2*wm [2];
+   j12[3] = (wm .fP(3)-w31.fP(3))*v12 + sv1*w31[3] + sv2*wm [3];
+
+   j34[0] = (wp .fP(0)-w32.fP(0))*v34 + sv3*w32[0] + sv4*wp [0];
+   j34[1] = (wp .fP(1)-w32.fP(1))*v34 + sv3*w32[1] + sv4*wp [1];
+   j34[2] = (wp .fP(2)-w32.fP(2))*v34 + sv3*w32[2] + sv4*wp [2];
+   j34[3] = (wp .fP(3)-w32.fP(3))*v34 + sv3*w32[3] + sv4*wp [3];
+
+   Complex_t js = j12[0]*j34[0] - j12[1]*j34[1] - j12[2]*j34[2] - j12[3]*j34[3];
+
+   Complex_t vertex = v14*v23 - v13*v24 + dws*js;
+   *this = vertex * (g*g);
+}
+
 
 //----------
 // VSSXXX()

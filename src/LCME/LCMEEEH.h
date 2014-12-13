@@ -50,6 +50,7 @@ namespace lcme{
     Double_t GetQ2EE     ()           const { return fQ2EE;       }
     Double_t GetCosThetaF()           const { return fCosThetaF; }
     Double_t GetPhiF     ()           const { return fPhiF;      }
+    Bool_t   GetPropagator ()         const { return fPropagator;  }
     
     // ----------------------
     //   Base class methods
@@ -58,6 +59,8 @@ namespace lcme{
     Double_t GetMatrixElement2(Int_t vHel[]);     // matrix element squared with specified helicities
     void     SetMass     (Double_t m      ) { fMass      = m;    }
     void     SetMomentumFinal(TLorentzVector vLortz[]); // set four-momenta of final states
+    void     SetAnomalous(Double_t a1, Double_t a2, Double_t a3); // set anomalous HZZ coupling
+    void     SetPropagator(Bool_t i) {fPropagator = i;};
     
     // ----------------------
     //   Utility methods
@@ -103,8 +106,14 @@ namespace lcme{
     Double_t       fPhi;            // phi_x        in cm  frame
     Double_t       fCosThetaF;      // cos(theta_N) in EE  frame
     Double_t       fPhiF;           // phi_N        in EE  frame
+
+    Bool_t         iAnomalous;      // switch of anomalous hzz coupling
+    Double_t       fA1;             
+    Double_t       fA2;
+    Double_t       fA3;
     
-    
+    Bool_t         fPropagator;     // including B-W of Higgs
+
     ClassDef(LCMEEEH, 1) // Matrix Element for e+e- -> EEH process
   };
 }

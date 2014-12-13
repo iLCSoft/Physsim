@@ -41,7 +41,8 @@ namespace lcme{
 		   Double_t polE,
 		   Double_t polP)
   :LCMEBase(name,title,polE,polP),
-   fWBosonPtr (0)
+   fWBosonPtr (0),
+   fPropagator(0)
   {
     //  Constructor of bases.  Default parameter should be initialized here
     //
@@ -140,6 +141,8 @@ namespace lcme{
     //  Amplitude squared
     // -------------------
     Complex_t amp   = FullAmplitude();
+    if (GetPropagator()) amp   *= GetHiggsPropagator(fM[2]*fM[2]) *
+			          GetHiggsPropagator(fM[3]*fM[3]);
     Double_t  amp2  = TMath::Power(abs(amp),2);
     
     // -------------------

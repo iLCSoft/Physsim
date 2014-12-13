@@ -50,6 +50,7 @@ namespace lcme{
     Double_t GetQ2NN     ()           const { return fQ2NN;       }
     Double_t GetCosThetaF()           const { return fCosThetaF; }
     Double_t GetPhiF     ()           const { return fPhiF;      }
+    Bool_t   GetPropagator ()         const { return fPropagator;  }
     
     // ----------------------
     //   Base class methods
@@ -58,6 +59,7 @@ namespace lcme{
     Double_t GetMatrixElement2(Int_t vHel[]);     // matrix element squared with specified helicities
     void     SetMass     (Double_t m      ) { fMass      = m;    }
     void     SetMomentumFinal(TLorentzVector vLortz[]); // set four-momenta of final states
+    void     SetPropagator(Bool_t i) {fPropagator = i;};
     
     // ----------------------
     //   Utility methods
@@ -104,6 +106,7 @@ namespace lcme{
     Double_t       fCosThetaF;      // cos(theta_N) in NN  frame
     Double_t       fPhiF;           // phi_N        in NN  frame
     
+    Bool_t         fPropagator;     // including B-W of Higgs
     
     ClassDef(LCMENNH, 1) // Matrix Element for e+e- -> NNH process
   };
