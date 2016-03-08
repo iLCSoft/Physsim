@@ -41,9 +41,9 @@ INCLUDE( ${ROOT_DICT_MACROS_FILE} )
 
 
 # require proper c++
-ADD_DEFINITIONS( "-Wall -ansi -pedantic" )
+#ADD_DEFINITIONS( "-Wall -ansi -pedantic" )
 #----- need long long for int64 for now ------
-ADD_DEFINITIONS( "-Wno-long-long -fno-strict-aliasing" )
+#ADD_DEFINITIONS( "-Wno-long-long -fno-strict-aliasing" )
 
 
 # Physsim library
