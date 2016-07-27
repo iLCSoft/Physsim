@@ -12,6 +12,15 @@
 Release Notes:
 
  --------
+| v00-03 |   - original version by Junping & Keisuke...
+ --------
+
+F.Gaede
+   - made compatible w/ c++11	
+   - remove -Wall -ansi
+
+
+ --------
 | v00-01 |   - original version by Junping & Keisuke...
  --------
 1.) Physsim -- a matrix element package, consists of mainly two libraries, HELLib which is essentially C++ version of HELAS (HELicity Amplitude Subroutines, cf original manual by H.Murayama, etc.), and LCME which provides Matrix Element calculation for various e+e- processes. (note: there exists another independent generator which is also called Physsim, since core part of the Physsim here in ilcsoft is quite similar and developped mainly by Keisuke, we would like to keep the same name.)
