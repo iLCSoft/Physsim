@@ -20,6 +20,8 @@ FOREACH( lib_input_dir ${lib_input_dirs} )
     )
 
     GEN_ROOT_DICT_SOURCES( ${lib_input_dir}Dict.cxx )
+
+    INSTALL(FILES ${ROOT_DICT_OUTPUT_DIR}/${lib_input_dir}Dict_rdict.pcm DESTINATION lib)
     
     LIST( APPEND lib_sources ${ROOT_DICT_OUTPUT_SOURCES} )
 
