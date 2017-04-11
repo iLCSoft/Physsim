@@ -1,10 +1,13 @@
 ####################################################################
 # Physsim package 
+#      -- for matrix element method
 #
-# Junping Tian & Keisuke Fujii, KEK
+# authors:
+# Keisuke Fujii, KEK,
+#         email: keisuke.fujii@kek.jp
+# Junping Tian, The University of Tokyo,
+#         email: tian@icepp.s.u-tokyo.ac.jp
 #
-# junping.tian@kek.jp
-# keisuke.fujii@kek.jp
 ###################################################################
 
 
