@@ -1,3 +1,8 @@
+# v00-04-02
+
+* 2021-08-16 Valentin Volkl ([PR#1](https://github.com/iLCSoft/Physsim/pull/1))
+  - Add explicit include for TString.h to avoid build failure with ROOT v6.24
+
 # v00-04-01
 
 # v00-04
