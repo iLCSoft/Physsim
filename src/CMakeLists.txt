@@ -15,26 +15,36 @@ FOREACH( lib_input_dir ${lib_input_dirs} )
 
     PREPARE_ROOT_DICT_HEADERS( ${lib_input_dir} )
 
-    INSTALL_DIRECTORY( ${lib_input_dir}/ DESTINATION "include/physsim"
+    INSTALL_DIRECTORY( ${lib_input_dir}/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/physsim
         FILES_MATCHING PATTERN "*.h" PATTERN "LinkDef.h" EXCLUDE
     )
 
     GEN_ROOT_DICT_SOURCES( ${lib_input_dir}Dict.cxx )
 
-    INSTALL(FILES ${ROOT_DICT_OUTPUT_DIR}/${lib_input_dir}Dict_rdict.pcm DESTINATION lib)
+    INSTALL(FILES ${ROOT_DICT_OUTPUT_DIR}/${lib_input_dir}Dict_rdict.pcm
+        DESTINATION ${CMAKE_INSTALL_LIBDIR})
     
     LIST( APPEND lib_sources ${ROOT_DICT_OUTPUT_SOURCES} )
 
 ENDFOREACH()
 
-INCLUDE_DIRECTORIES( ${ROOT_DICT_INCLUDE_DIRS} )
-INCLUDE_DIRECTORIES( ${ROOT_INCLUDE_DIRS} )
+ADD_SHARED_LIBRARY(Physsim SHARED ${lib_sources})
+TARGET_INCLUDE_DIRECTORIES(Physsim
+    PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PRIVATE
+    $<BUILD_INTERFACE:${ROOT_DICT_INCLUDE_DIRS}>
+    )
+TARGET_LINK_LIBRARIES(Physsim PUBLIC ROOT::Physics)
 
-#MESSAGE( STATUS "Physsim lib sources: ${lib_sources}" )
 
-ADD_SHARED_LIBRARY( Physsim ${lib_sources} )
-INSTALL_SHARED_LIBRARY( Physsim DESTINATION lib )
-TARGET_LINK_LIBRARIES( Physsim ${ROOT_LIBRARIES} )
+INSTALL(TARGETS
+    Physsim
+    EXPORT PhyssimTargets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 
 IF( APPLE ) #---- need special linker flags for ROOT dictionary on MacOS
     SET_TARGET_PROPERTIES( Physsim PROPERTIES
