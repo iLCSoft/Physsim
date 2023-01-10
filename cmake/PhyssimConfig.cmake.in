@@ -1,0 +1,25 @@
+###############################################################
+# Physsim CMAKE CONFIG
+#
+# Exported Targets
+#
+#   Physsim::Physsim     The Physsim library
+###############################################################
+@PACKAGE_INIT@
+
+# set_and_check(Physsim_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+# set_and_check(Physsim_LIBRARY_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+
+include(CMakeFindDependencyMacro)
+find_dependency(ROOT @ROOT_VERSION@)
+
+if (NOT TARGET Physsim::Physsim)
+  include("${CMAKE_CURRENT_LIST_DIR}/PhyssimTargets.cmake")
+endif()
+
+check_required_components(Physsim)
+
+# Print the default "Found" message and check library location
+include(FindPackageHandleStandardArgs)
+get_property(TEST_PHYSSIM_LIBRARY TARGET Physsim::Physsim PROPERTY LOCATION)
+find_package_handle_standard_args(Physsim DEFAULT_MSG CMAKE_CURRENT_LIST_FILE TEST_PHYSSIM_LIBRARY)
