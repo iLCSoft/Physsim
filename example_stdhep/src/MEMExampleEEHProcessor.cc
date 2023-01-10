@@ -29,8 +29,6 @@
 #include "TMath.h"
 #include "TLorentzVector.h"
 
-#include "Utilities.h"
-
 //#include "physsim/LCMEEEH.h"
 
 using namespace lcio ;
