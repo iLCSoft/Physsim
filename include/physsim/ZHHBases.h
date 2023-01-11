@@ -16,8 +16,8 @@
 #include "TNamed.h"
 #include "TLorentzVector.h"
 
-#include "HELLib.h"
-#include "GENLib.h"
+#include "physsim/HELLib.h"
+#include "physsim/GENLib.h"
 
 //_______________________________________________________________________
 // =====================

@@ -10,7 +10,7 @@
 //*    2014/02/17  J.Tian	Original version.
 //*****************************************************************************
 
-#include "LCMEBase.h"
+#include "physsim/LCMEBase.h"
 
 //#include <sstream>
 //#include <iomanip>

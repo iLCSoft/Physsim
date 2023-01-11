@@ -11,7 +11,7 @@
 //*
 //*****************************************************************************
 
-#include "HELLib.h"
+#include "physsim/HELLib.h"
 
 #include <sstream>
 #include <iomanip>

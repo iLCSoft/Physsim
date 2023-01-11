@@ -12,7 +12,7 @@
 //*
 //*****************************************************************************
 
-#include "LCMEEEZ.h"
+#include "physsim/LCMEEEZ.h"
 
 #include <sstream>
 #include <iomanip>
@@ -20,7 +20,7 @@
 //*----------------------------------------------------------------------
 //*     Numerical and Natural Constants
 //*----------------------------------------------------------------------
-#include "GENNumCon.h"
+#include "physsim/GENNumCon.h"
 
 ClassImp(lcme::LCMEEEZ)
 
