@@ -1,0 +1,44 @@
+name: linux
+on: [push, pull_request]
+
+jobs:
+  centos7:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        COMPILER: [gcc10, clang11]
+        LCG: [100]
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cvmfs-contrib/github-action-cvmfs@v3
+    - uses: aidasoft/run-lcg-view@v4
+      with:
+        view-path: "/cvmfs/clicdp.cern.ch/iLCSoft/lcg/${{ matrix.LCG }}/nightly/x86_64-centos7-${{ matrix.COMPILER }}-opt"
+        setup-script: "init_ilcsoft.sh"
+        run: |
+          mkdir build
+          cd build
+          echo "::group::Run CMake"
+          cmake -GNinja \
+            -C ${ILCSOFT}/ILCSoft.cmake \
+            -DCMAKE_CXX_FLAGS=" -fdiagnostics-color=always " \
+            -DCMAKE_INSTALL_PREFIX=../install \
+            ..
+          echo "::endgroup::" && echo "::group::Build"
+          ninja -k0
+          echo "::endgroup::" && echo "::group::Install"
+          ninja install
+          echo "::endgroup::" && echo "::group::Build example processors"
+          cd ../install
+          export CMAKE_PREFIX_PATH=$(pwd):${CMAKE_PREFIX_PATH}
+          cd ../example_stdhep
+          mkdir build
+          cd build
+          cmake -GNinja \
+            -C ${ILCSOFT}/ILCSoft.cmake \
+            -DCMAKE_CXX_FLAGS=" -fdiagnostics-color=always " \
+            -DCMAKE_INSTALL_PREFIX=../install \
+            ..
+          ninja -k0
