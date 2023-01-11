@@ -11,8 +11,8 @@
 //*
 //*****************************************************************************
 
-#include "GENLib.h"
-#include "GENNumCon.h"
+#include "physsim/GENLib.h"
+#include "physsim/GENNumCon.h"
 
 #include <sstream>
 #include <iomanip>

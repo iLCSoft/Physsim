@@ -13,9 +13,9 @@
 //*
 //*****************************************************************************
 
-#include "ANL4DVector.h"
 #include "TObjArray.h"
-#include "TAttLockable.h"
+#include "physsim/ANL4DVector.h"
+#include "physsim/TAttLockable.h"
 
 class GENPDTEntry;
 class GENPDTWBoson;

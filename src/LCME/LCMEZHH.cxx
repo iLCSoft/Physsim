@@ -12,7 +12,7 @@
 //*
 //*****************************************************************************
 
-#include "LCMEZHH.h"
+#include "physsim/LCMEZHH.h"
 
 #include <sstream>
 #include <iomanip>
@@ -23,7 +23,7 @@
 //*----------------------------------------------------------------------
 //*     Numerical and Natural Constants
 //*----------------------------------------------------------------------
-#include "GENNumCon.h"
+#include "physsim/GENNumCon.h"
 
 ClassImp(lcme::LCMEZHH)
 
