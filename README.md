@@ -1,5 +1,6 @@
 # Physsim
-[![Build Status](https://travis-ci.org/iLCSoft/Physsim.svg?branch=master)](https://travis-ci.org/iLCSoft/Physsim)
+[![keyh4ep](https://github.com/iLCSoft/Physsim/actions/workflows/key4hep.yml/badge.svg)](https://github.com/iLCSoft/Physsim/actions/workflows/key4hep.yml)
+[![linux](https://github.com/iLCSoft/Physsim/actions/workflows/linux.yml/badge.svg)](https://github.com/iLCSoft/Physsim/actions/workflows/linux.yml)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/12399/badge.svg)](https://scan.coverity.com/projects/ilcsoft-physsim)
 
 Physsim is a matrix element package
