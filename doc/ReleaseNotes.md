@@ -1,3 +1,12 @@
+# v00-05
+
+* 2023-01-12 Thomas Madlener ([PR#2](https://github.com/iLCSoft/Physsim/pull/2))
+  - Update CMake configuration to use the modern target based approach of propagating dependencies and making Physsim a package that can be easily found via `find_package(Physsim)`
+  - Remove duplicated headers in `src` and use the ROOT CMake macro to generate dictionaries and build the library.
+  - Make examples use this functionality and in this way make it build again via the canonical iLCSoft cmake build steps.
+    - Add more detailed instructions to the README
+  - Add github actions based CI and remove the travis-ci configuration.
+
 # v00-04-02
 
 * 2021-08-16 Valentin Volkl ([PR#1](https://github.com/iLCSoft/Physsim/pull/1))
