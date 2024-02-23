@@ -22,6 +22,15 @@ FIND_PACKAGE( ILCUTIL REQUIRED COMPONENTS ILCSOFT_CMAKE_MODULES )
 FIND_PACKAGE( ROOT 6.14 REQUIRED )
 FIND_PACKAGE( Physsim REQUIRED)
 
+
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
+# Prevent CMake falls back to the latest standard the compiler does support
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Disables the use of compiler-specific extensions, hence makes sure the code
+# works for a wider range of compilers
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 # load default settings from ILCSOFT_CMAKE_MODULES
 INCLUDE( ilcsoft_default_settings )
 
